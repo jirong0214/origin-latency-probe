@@ -5,8 +5,15 @@ services:
     container_name: origin-latency-probe
     restart: unless-stopped
     environment:
-      PROBE_APP_NAME: personal-homepage
+      PROBE_APP_NAME: p.zshio.de
       PROBE_PATH: /__origin_latency_probe
-      PROBE_PORT: "8080"
+      PROBE_PORT: "12071"
     ports:
-      - "127.0.0.1:8081:8080"
+      - "127.0.0.1:12071:12071"
+    networks:
+      - default
+      - 1panel-network
+
+networks:
+  1panel-network:
+    external: true
