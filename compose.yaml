@@ -6,7 +6,6 @@ services:
     restart: unless-stopped
     environment:
       PROBE_APP_NAME: p.zshio.de
-      PROBE_PATH: /__origin_latency_probe
       PROBE_PORT: "12071"
     ports:
       - "127.0.0.1:12071:12071"

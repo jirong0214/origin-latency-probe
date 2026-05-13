@@ -18,7 +18,7 @@ from urllib.parse import parse_qs, urlparse
 
 APP_NAME = os.getenv("PROBE_APP_NAME", "origin-latency-probe")
 PROBE_HOST = os.getenv("PROBE_HOST", "0.0.0.0")
-PROBE_PORT = int(os.getenv("PROBE_PORT", "8080"))
+PROBE_PORT = int(os.getenv("PROBE_PORT", "12071"))
 PROBE_PATH = os.getenv("PROBE_PATH", "/__origin_latency_probe")
 HEALTH_PATH = os.getenv("HEALTH_PATH", "/healthz")
 

@@ -19,7 +19,6 @@ docker run -d \
   --name origin-latency-probe \
   --restart unless-stopped \
   -e PROBE_APP_NAME=p.zshio.de \
-  -e PROBE_PATH=/__origin_latency_probe \
   -p 127.0.0.1:12071:12071 \
   origin-latency-probe:latest
 ```
@@ -68,5 +67,5 @@ If Cloudflare has aggressive cache rules such as Cache Everything, add a bypass 
 - `PROBE_APP_NAME`: name returned in the JSON payload. Default: `origin-latency-probe`
 - `PROBE_HOST`: bind host inside the container. Default: `0.0.0.0`
 - `PROBE_PORT`: bind port inside the container. Default: `12071`
-- `PROBE_PATH`: probe endpoint path. Default: `/__origin_latency_probe`
+- `PROBE_PATH`: optional probe endpoint path. Default: `/__origin_latency_probe`
 - `HEALTH_PATH`: health endpoint path. Default: `/healthz`

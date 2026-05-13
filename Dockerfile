@@ -3,8 +3,7 @@ FROM python:3.12-alpine
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PROBE_HOST=0.0.0.0 \
-    PROBE_PORT=12071 \
-    PROBE_PATH=/__origin_latency_probe
+    PROBE_PORT=12071
 
 WORKDIR /app
 COPY probe_server.py /app/probe_server.py
