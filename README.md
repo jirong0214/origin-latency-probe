@@ -18,9 +18,9 @@ docker build -t origin-latency-probe:latest .
 docker run -d \
   --name origin-latency-probe \
   --restart unless-stopped \
-  -e PROBE_APP_NAME=personal-homepage \
+  -e PROBE_APP_NAME=p.zshio.de \
   -e PROBE_PATH=/__origin_latency_probe \
-  -p 127.0.0.1:8081:8080 \
+  -p 127.0.0.1:12071:12071 \
   origin-latency-probe:latest
 ```
 
@@ -37,9 +37,9 @@ Caddy example:
 ```caddyfile
 example.com {
 	@latency_probe path /__origin_latency_probe
-	reverse_proxy @latency_probe 127.0.0.1:8081
+	reverse_proxy @latency_probe 127.0.0.1:12071
 
-	reverse_proxy 127.0.0.1:8080
+	reverse_proxy 127.0.0.1:12071
 }
 ```
 
@@ -49,9 +49,9 @@ cloudflared ingress example:
 ingress:
   - hostname: example.com
     path: /__origin_latency_probe
-    service: http://127.0.0.1:8081
+    service: http://origin-latency-probe:12071
   - hostname: example.com
-    service: http://127.0.0.1:8080
+    service: http://origin-latency-probe:12071
   - service: http_status:404
 ```
 
@@ -65,6 +65,6 @@ If Cloudflare has aggressive cache rules such as Cache Everything, add a bypass 
 
 - `PROBE_APP_NAME`: name returned in the JSON payload. Default: `origin-latency-probe`
 - `PROBE_HOST`: bind host inside the container. Default: `0.0.0.0`
-- `PROBE_PORT`: bind port inside the container. Default: `8080`
+- `PROBE_PORT`: bind port inside the container. Default: `12071`
 - `PROBE_PATH`: probe endpoint path. Default: `/__origin_latency_probe`
 - `HEALTH_PATH`: health endpoint path. Default: `/healthz`
