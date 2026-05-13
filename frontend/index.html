@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Origin Latency Probe</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <h1>Origin Latency Probe</h1>
+          <p id="endpoint">/__origin_latency_probe</p>
+        </div>
+        <div class="status" id="status">
+          <span class="status-dot"></span>
+          <span id="statusText">Starting</span>
+        </div>
+      </header>
+
+      <section class="metrics" aria-label="Latency metrics">
+        <article class="metric">
+          <span class="label">Latest</span>
+          <strong id="latestLatency">--</strong>
+          <span class="unit">ms</span>
+        </article>
+        <article class="metric">
+          <span class="label">Average</span>
+          <strong id="averageLatency">--</strong>
+          <span class="unit">ms</span>
+        </article>
+        <article class="metric">
+          <span class="label">Average jitter</span>
+          <strong id="averageJitter">--</strong>
+          <span class="unit">ms</span>
+        </article>
+        <article class="metric">
+          <span class="label">Cold latency</span>
+          <strong id="coldLatency">--</strong>
+          <span class="unit">ms</span>
+        </article>
+      </section>
+
+      <section class="panel chart-panel" aria-label="Latency chart">
+        <div class="panel-head">
+          <div>
+            <h2>Rolling latency</h2>
+            <p>Warm samples only affect average and jitter.</p>
+          </div>
+          <div class="legend">
+            <span><i class="warm"></i>Warm</span>
+            <span><i class="cold"></i>Cold/resume</span>
+            <span><i class="error"></i>Error</span>
+          </div>
+        </div>
+        <canvas id="latencyChart" width="1200" height="440"></canvas>
+      </section>
+
+      <section class="details">
+        <div class="detail">
+          <span>Window</span>
+          <strong id="sampleWindow">0 / 120</strong>
+        </div>
+        <div class="detail">
+          <span>Success rate</span>
+          <strong id="successRate">--</strong>
+        </div>
+        <div class="detail">
+          <span>Last check</span>
+          <strong id="lastCheck">--</strong>
+        </div>
+        <div class="detail">
+          <span>App</span>
+          <strong id="appName">--</strong>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

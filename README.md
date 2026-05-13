@@ -4,7 +4,7 @@ Standalone application-layer probe for measuring the latency of a real origin re
 
 The browser should call this service through the same hostname/CDN/reverse-proxy route as normal business traffic. The endpoint returns no-cache headers and a tiny JSON payload, while the frontend measures total round-trip time with `performance.now()`.
 
-The UI should calculate jitter client-side from successful samples, for example as the absolute difference between the latest two measured round-trip times.
+The UI samples the probe every 5 seconds. It keeps a rolling window of 120 successful warm samples and calculates average jitter client-side as the average absolute difference between adjacent latency samples in that window. The first successful request after page load, and any request after a long pause, is treated as a cold/resume sample and is displayed separately from the rolling averages.
 
 ## Build
 
@@ -30,6 +30,11 @@ Or:
 docker compose up -d --build
 ```
 
+The compose stack starts two services:
+
+- `origin-latency-probe`: JSON probe endpoint on port `12071`
+- `origin-latency-ui`: static latency dashboard on port `12072`
+
 ## Reverse Proxy
 
 Caddy example:
@@ -39,7 +44,7 @@ example.com {
 	@latency_probe path /__origin_latency_probe
 	reverse_proxy @latency_probe 127.0.0.1:12071
 
-	reverse_proxy 127.0.0.1:12071
+	reverse_proxy 127.0.0.1:12072
 }
 ```
 
@@ -48,10 +53,7 @@ cloudflared ingress example:
 ```yaml
 ingress:
   - hostname: example.com
-    path: /__origin_latency_probe
-    service: http://origin-latency-probe:12071
-  - hostname: example.com
-    service: http://origin-latency-probe:12071
+    service: http://origin-latency-ui:80
   - service: http_status:404
 ```
 

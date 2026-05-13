@@ -14,6 +14,19 @@ services:
       - default
       - 1panel-network
 
+  origin-latency-ui:
+    build: ./frontend
+    image: origin-latency-ui:latest
+    container_name: origin-latency-ui
+    restart: unless-stopped
+    depends_on:
+      - origin-latency-probe
+    ports:
+      - "127.0.0.1:12072:80"
+    networks:
+      - default
+      - 1panel-network
+
 networks:
   1panel-network:
     external: true
