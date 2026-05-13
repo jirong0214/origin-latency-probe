@@ -13,10 +13,11 @@ const state = {
   successfulChecks: 0,
   consecutiveFailures: 0,
   timer: null,
+  chartPoints: [],
+  hoverPoint: null,
 };
 
 const els = {
-  endpoint: document.getElementById("endpoint"),
   status: document.getElementById("status"),
   statusText: document.getElementById("statusText"),
   latestLatency: document.getElementById("latestLatency"),
@@ -28,9 +29,8 @@ const els = {
   lastCheck: document.getElementById("lastCheck"),
   appName: document.getElementById("appName"),
   canvas: document.getElementById("latencyChart"),
+  chartTooltip: document.getElementById("chartTooltip"),
 };
-
-els.endpoint.textContent = `${PROBE_PATH} every ${INTERVAL_MS / 1000}s`;
 
 function formatMs(value) {
   if (!Number.isFinite(value)) return "--";
@@ -126,7 +126,7 @@ async function runProbe() {
     if (payload.app) {
       els.appName.textContent = payload.app;
     }
-    setStatus("ok", kind === "warm" ? "Online" : "Online, cold sample");
+    setStatus("ok", "Online");
   } catch (error) {
     pushSample({
       kind: "error",
@@ -180,7 +180,7 @@ function drawChart() {
 
   const cssWidth = width / ratio;
   const cssHeight = height / ratio;
-  const pad = { top: 18, right: 48, bottom: 34, left: 52 };
+  const pad = { top: 24, right: 44, bottom: 34, left: 54 };
   const plotWidth = cssWidth - pad.left - pad.right;
   const plotHeight = cssHeight - pad.top - pad.bottom;
   const latencies = state.samples
@@ -190,8 +190,8 @@ function drawChart() {
 
   context.font = "12px system-ui, sans-serif";
   context.lineWidth = 1;
-  context.strokeStyle = "#d7dee7";
-  context.fillStyle = "#64748b";
+  context.strokeStyle = "#e8edf2";
+  context.fillStyle = "#8b95a1";
 
   for (let i = 0; i <= 4; i += 1) {
     const y = pad.top + (plotHeight / 4) * i;
@@ -200,14 +200,29 @@ function drawChart() {
     context.moveTo(pad.left, y);
     context.lineTo(pad.left + plotWidth, y);
     context.stroke();
-    context.fillText(`${Math.round(value)}ms`, 8, y + 4);
+    context.fillText(`${Math.round(value)}ms`, 12, y + 4);
+  }
+
+  context.strokeStyle = "#eef2f6";
+  for (let i = 0; i <= 6; i += 1) {
+    const x = pad.left + (plotWidth / 6) * i;
+    context.beginPath();
+    context.moveTo(x, pad.top);
+    context.lineTo(x, pad.top + plotHeight);
+    context.stroke();
   }
 
   if (!state.samples.length) {
-    context.fillStyle = "#64748b";
-    context.fillText("Waiting for first probe...", pad.left + 12, pad.top + 28);
+    context.fillStyle = "#9ca3af";
+    context.fillText("Collecting first sample", pad.left + 12, pad.top + 30);
+    drawEmptySparkline(context, pad, plotWidth, plotHeight);
     context.setTransform(1, 0, 0, 1, 0, 0);
+    updateTooltip();
     return;
+  }
+
+  if (state.samples.length < 3) {
+    drawEmptySparkline(context, pad, plotWidth, plotHeight);
   }
 
   const xFor = (index) => {
@@ -216,9 +231,12 @@ function drawChart() {
   };
   const yFor = (latency) => pad.top + plotHeight - (latency / maxLatency) * plotHeight;
   const offset = Math.max(0, MAX_SAMPLES - state.samples.length);
+  state.chartPoints = [];
 
   context.strokeStyle = "#0f766e";
   context.lineWidth = 2;
+  context.lineJoin = "round";
+  context.lineCap = "round";
   context.beginPath();
   let drawing = false;
   state.samples.forEach((sample, index) => {
@@ -245,20 +263,79 @@ function drawChart() {
       context.beginPath();
       context.arc(x, y, 4, 0, Math.PI * 2);
       context.fill();
+      state.chartPoints.push({ x, y, sample });
       return;
     }
     if (!Number.isFinite(sample.latency)) return;
     const y = yFor(sample.latency);
+    state.chartPoints.push({ x, y, sample });
+    context.fillStyle = "#ffffff";
+    context.beginPath();
+    context.arc(x, y, sample.kind === "cold" ? 6 : 4.5, 0, Math.PI * 2);
+    context.fill();
     context.fillStyle = sample.kind === "cold" ? "#b45309" : "#0f766e";
     context.beginPath();
-    context.arc(x, y, sample.kind === "cold" ? 5 : 3.5, 0, Math.PI * 2);
+    context.arc(x, y, sample.kind === "cold" ? 4 : 3, 0, Math.PI * 2);
     context.fill();
   });
 
-  context.fillStyle = "#64748b";
+  if (state.hoverPoint) {
+    context.strokeStyle = "rgba(17, 24, 39, 0.16)";
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(state.hoverPoint.x, pad.top);
+    context.lineTo(state.hoverPoint.x, pad.top + plotHeight);
+    context.stroke();
+
+    context.fillStyle = "#ffffff";
+    context.beginPath();
+    context.arc(state.hoverPoint.x, state.hoverPoint.y, 7, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = state.hoverPoint.sample.kind === "cold" ? "#b45309" : "#0f766e";
+    context.beginPath();
+    context.arc(state.hoverPoint.x, state.hoverPoint.y, 4, 0, Math.PI * 2);
+    context.fill();
+  }
+
+  context.fillStyle = "#8b95a1";
   context.fillText("oldest", pad.left, cssHeight - 10);
   context.fillText("latest", pad.left + plotWidth - 34, cssHeight - 10);
   context.setTransform(1, 0, 0, 1, 0, 0);
+  updateTooltip();
+}
+
+function drawEmptySparkline(context, pad, plotWidth, plotHeight) {
+  context.save();
+  context.strokeStyle = "#dbe3ea";
+  context.lineWidth = 2;
+  context.lineCap = "round";
+  context.beginPath();
+  for (let i = 0; i < 12; i += 1) {
+    const x = pad.left + (plotWidth / 11) * i;
+    const y = pad.top + plotHeight * (0.58 + Math.sin(i * 0.85) * 0.06);
+    if (i === 0) context.moveTo(x, y);
+    else context.lineTo(x, y);
+  }
+  context.stroke();
+  context.restore();
+}
+
+function updateTooltip() {
+  const tooltip = els.chartTooltip;
+  const point = state.hoverPoint;
+  if (!point || point.sample.kind === "error") {
+    tooltip.classList.remove("visible");
+    return;
+  }
+
+  tooltip.innerHTML = `
+    <strong>${formatMs(point.sample.latency)} ms</strong>
+    <span>${point.sample.kind === "cold" ? "Cold/resume" : "Warm"} sample</span>
+    <span>${nowLabel(point.sample.at)}</span>
+  `;
+  tooltip.style.left = `${point.x}px`;
+  tooltip.style.top = `${point.y}px`;
+  tooltip.classList.add("visible");
 }
 
 function render() {
@@ -273,6 +350,25 @@ function start() {
 }
 
 window.addEventListener("resize", drawChart);
+els.canvas.addEventListener("mousemove", (event) => {
+  const rect = els.canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  const nearest = state.chartPoints
+    .filter((point) => point.sample.kind !== "error")
+    .map((point) => ({
+      point,
+      distance: Math.hypot(point.x - x, point.y - y),
+    }))
+    .sort((a, b) => a.distance - b.distance)[0];
+
+  state.hoverPoint = nearest && nearest.distance < 24 ? nearest.point : null;
+  drawChart();
+});
+els.canvas.addEventListener("mouseleave", () => {
+  state.hoverPoint = null;
+  drawChart();
+});
 window.addEventListener("visibilitychange", () => {
   if (!document.hidden) {
     runProbe();

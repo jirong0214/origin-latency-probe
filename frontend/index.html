@@ -4,14 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Origin Latency Probe</title>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/styles.css?v=20260513-ui2">
   </head>
   <body>
     <main class="shell">
       <header class="topbar">
-        <div>
+        <div class="headline">
           <h1>Origin Latency Probe</h1>
-          <p id="endpoint">/__origin_latency_probe</p>
+          <p>Live origin path monitoring</p>
         </div>
         <div class="status" id="status">
           <span class="status-dot"></span>
@@ -46,7 +46,7 @@
         <div class="panel-head">
           <div>
             <h2>Rolling latency</h2>
-            <p>Warm samples only affect average and jitter.</p>
+            <p>Warm sample window</p>
           </div>
           <div class="legend">
             <span><i class="warm"></i>Warm</span>
@@ -54,7 +54,10 @@
             <span><i class="error"></i>Error</span>
           </div>
         </div>
-        <canvas id="latencyChart" width="1200" height="440"></canvas>
+        <div class="chart-wrap">
+          <canvas id="latencyChart" width="1200" height="440"></canvas>
+          <div class="chart-tooltip" id="chartTooltip" role="status" aria-live="polite"></div>
+        </div>
       </section>
 
       <section class="details">
@@ -77,6 +80,6 @@
       </section>
     </main>
 
-    <script src="/app.js"></script>
+    <script src="/app.js?v=20260513-ui2"></script>
   </body>
 </html>
