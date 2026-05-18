@@ -14,25 +14,52 @@ docker build -t origin-latency-probe:latest .
 
 ## Run
 
+Pull the published probe image:
+
+```bash
+docker pull ghcr.io/jirong0214/origin-latency-probe:latest
+```
+
 ```bash
 docker run -d \
   --name origin-latency-probe \
   --restart unless-stopped \
   -e PROBE_APP_NAME=p.zshio.de \
   -p 127.0.0.1:12071:12071 \
-  origin-latency-probe:latest
+  ghcr.io/jirong0214/origin-latency-probe:latest
 ```
 
-Or:
+The UI is published separately:
 
 ```bash
-docker compose up -d --build
+docker pull ghcr.io/jirong0214/origin-latency-probe-ui:latest
+```
+
+Or run both services with Docker Compose:
+
+```bash
+docker compose up -d
 ```
 
 The compose stack starts two services:
 
 - `origin-latency-probe`: JSON probe endpoint on port `12071`
 - `origin-latency-ui`: static latency dashboard on port `12072`
+
+For local development builds, use:
+
+```bash
+docker compose up -d --build
+```
+
+## Published Images
+
+Images are published to GitHub Container Registry on every push to `master` and every `v*.*.*` tag:
+
+- `ghcr.io/jirong0214/origin-latency-probe:latest`
+- `ghcr.io/jirong0214/origin-latency-probe-ui:latest`
+
+Version tags such as `v1.0.0` are also published when matching Git tags are pushed. After the first workflow run, make the packages public in the repository's GitHub Packages settings if anonymous pulls should be allowed.
 
 ## Reverse Proxy
 
