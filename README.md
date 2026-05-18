@@ -22,10 +22,12 @@ The compose stack starts two services:
 - `origin-latency-probe`: JSON probe endpoint on port `12071`
 - `origin-latency-ui`: static latency dashboard on port `12072`
 
-The default compose file binds both ports to localhost:
+The default compose file binds both ports to `0.0.0.0` for remote debugging:
 
 - Probe API: `http://127.0.0.1:12071/__origin_latency_probe`
 - UI: `http://127.0.0.1:12072`
+
+Replace `127.0.0.1` with the server IP when accessing it from another machine.
 
 To update later:
 

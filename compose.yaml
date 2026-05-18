@@ -4,10 +4,10 @@ services:
     container_name: origin-latency-probe
     restart: unless-stopped
     environment:
-      PROBE_APP_NAME: p.zshio.de
+      PROBE_APP_NAME: example.com
       PROBE_PORT: "12071"
     ports:
-      - "127.0.0.1:12071:12071"
+      - "0.0.0.0:12071:12071"
 
   origin-latency-ui:
     image: ghcr.io/jirong0214/origin-latency-probe-ui:latest
@@ -16,4 +16,4 @@ services:
     depends_on:
       - origin-latency-probe
     ports:
-      - "127.0.0.1:12072:80"
+      - "0.0.0.0:12072:80"
