@@ -6,38 +6,14 @@ The browser should call this service through the same hostname/CDN/reverse-proxy
 
 The UI samples the probe every 5 seconds. It keeps a rolling window of 120 successful warm samples and calculates average jitter client-side as the average absolute difference between adjacent latency samples in that window. The first successful request after page load, and any request after a long pause, is treated as a cold/resume sample and is displayed separately from the rolling averages.
 
-## Build
+## Deploy
+
+Download the compose file and start both the probe server and UI:
 
 ```bash
-docker build -t origin-latency-probe:latest .
-```
-
-## Run
-
-Pull the published probe image:
-
-```bash
-docker pull ghcr.io/jirong0214/origin-latency-probe:latest
-```
-
-```bash
-docker run -d \
-  --name origin-latency-probe \
-  --restart unless-stopped \
-  -e PROBE_APP_NAME=p.zshio.de \
-  -p 127.0.0.1:12071:12071 \
-  ghcr.io/jirong0214/origin-latency-probe:latest
-```
-
-The UI is published separately:
-
-```bash
-docker pull ghcr.io/jirong0214/origin-latency-probe-ui:latest
-```
-
-Or run both services with Docker Compose:
-
-```bash
+mkdir -p origin-latency-probe
+cd origin-latency-probe
+curl -fsSLO https://raw.githubusercontent.com/jirong0214/origin-latency-probe/master/compose.yaml
 docker compose up -d
 ```
 
@@ -46,10 +22,16 @@ The compose stack starts two services:
 - `origin-latency-probe`: JSON probe endpoint on port `12071`
 - `origin-latency-ui`: static latency dashboard on port `12072`
 
-For local development builds, use:
+The default compose file binds both ports to localhost:
+
+- Probe API: `http://127.0.0.1:12071/__origin_latency_probe`
+- UI: `http://127.0.0.1:12072`
+
+To update later:
 
 ```bash
-docker compose up -d --build
+docker compose pull
+docker compose up -d
 ```
 
 ## Published Images
@@ -60,6 +42,18 @@ Images are published to GitHub Container Registry on every push to `master` and 
 - `ghcr.io/jirong0214/origin-latency-probe-ui:latest`
 
 Version tags such as `v1.0.0` are also published when matching Git tags are pushed. After the first workflow run, make the packages public in the repository's GitHub Packages settings if anonymous pulls should be allowed.
+
+## Local Build
+
+For local development builds from the repository source:
+
+```bash
+git clone https://github.com/jirong0214/origin-latency-probe.git
+cd origin-latency-probe
+docker build -t ghcr.io/jirong0214/origin-latency-probe:latest .
+docker build -t ghcr.io/jirong0214/origin-latency-probe-ui:latest ./frontend
+docker compose up -d
+```
 
 ## Reverse Proxy
 

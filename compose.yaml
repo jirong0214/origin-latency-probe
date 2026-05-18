@@ -1,6 +1,5 @@
 services:
   origin-latency-probe:
-    build: .
     image: ghcr.io/jirong0214/origin-latency-probe:latest
     container_name: origin-latency-probe
     restart: unless-stopped
@@ -11,7 +10,6 @@ services:
       - "127.0.0.1:12071:12071"
 
   origin-latency-ui:
-    build: ./frontend
     image: ghcr.io/jirong0214/origin-latency-probe-ui:latest
     container_name: origin-latency-ui
     restart: unless-stopped
